@@ -83,8 +83,8 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
-    dbContext.Database.Migrate();
+    await using var dbContext = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
+    await dbContext.Database.MigrateAsync();
     
     var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
     await SeedData.InitializeAdminAsync(scope.ServiceProvider, configuration);
