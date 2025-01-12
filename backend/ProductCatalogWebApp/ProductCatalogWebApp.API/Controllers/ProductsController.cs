@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using ProductCatalogWebApp.API.Contracts;
 using ProductCatalogWebApp.Application.Abstractions;
 using ProductCatalogWebApp.Domain.Entities;
+using ProductCatalogWebApp.Domain.Filters;
 
 namespace ProductCatalogWebApp.API.Controllers;
 
@@ -22,19 +23,22 @@ public class ProductsController : ControllerBase
     }
     
     [HttpGet]
-    public async Task<IActionResult> GetAllProducts()
+    public async Task<IActionResult> GetAllProducts([FromQuery] ProductFilter filter, 
+        [FromQuery] string? search, 
+        [FromQuery] int? page, 
+        [FromQuery] int? pageSize)
     {
-        var products = await _productService.GetAllProductsAsync();
+        var products = await _productService.GetAllProductsAsync(search, filter, page, pageSize);
 
         if (User.IsInRole("User"))
         {
-            var productsResponse = _mapper.Map<IEnumerable<ProductSimpleUserResponse>>(products);
-            return Ok(productsResponse);
+            var productsResponse = _mapper.Map<IEnumerable<ProductSimpleUserResponse>>(products.products);
+            return Ok(new { productsResponse, products.totalPages });
         }
         else
         {
-            var productsResponse = _mapper.Map<IEnumerable<ProductResponse>>(products);
-            return Ok(productsResponse);
+            var productsResponse = _mapper.Map<IEnumerable<ProductResponse>>(products.products);
+            return Ok(new { productsResponse, products.totalPages });
         }
     }
 

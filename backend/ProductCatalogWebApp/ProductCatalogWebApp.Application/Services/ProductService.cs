@@ -1,6 +1,7 @@
 ﻿using ProductCatalogWebApp.Application.Abstractions;
 using ProductCatalogWebApp.Domain.Abstractions;
 using ProductCatalogWebApp.Domain.Entities;
+using ProductCatalogWebApp.Domain.Filters;
 
 namespace ProductCatalogWebApp.Application.Services;
 
@@ -13,9 +14,13 @@ public class ProductService : IProductService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<IEnumerable<Product>> GetAllProductsAsync()
+    public async Task<(IEnumerable<Product> products, int totalPages)> GetAllProductsAsync(string? search,
+        ProductFilter filter,
+        int? pageNumber,
+        int? pageSize)
     {
-        var products = await _unitOfWork.Products.GetAllProductsAsync();
+        var products = await _unitOfWork.Products
+            .GetAllProductsAsync(search, filter, pageNumber, pageSize);
         return products;
     }
 

@@ -1,19 +1,35 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProductCatalogWebApp.Domain.Abstractions;
 using ProductCatalogWebApp.Domain.Entities;
+using ProductCatalogWebApp.Domain.Filters;
+using static ProductCatalogWebApp.Persistence.Extensions.ProductExtensions;
 
 namespace ProductCatalogWebApp.Persistence.Repositories;
 
 public class ProductsRepository(CatalogDbContext catalogDbContext) : IProductsRepository
 {
-    public async Task<IEnumerable<Product>> GetAllProductsAsync()
+    public async Task<(IEnumerable<Product> products, int totalPages)> GetAllProductsAsync(string? search,
+        ProductFilter filter,
+        int? pageNumber,
+        int? pageSize)
     {
+        var size = pageSize ?? 10;
+        var totalProducts = await catalogDbContext.Products
+            .Include(p => p.Category)
+            .AsNoTracking()
+            .Filter(filter)
+            .CountAsync();
+        var totalPages = (int)Math.Ceiling(totalProducts / (double)size);
+        
         var products = await catalogDbContext.Products
             .Include(p => p.Category)
             .AsNoTracking()
+            .Filter(filter)
+            .Search(search)
+            .Paginate(pageNumber, pageSize)
             .ToListAsync();
         
-        return products;
+        return (products, totalPages);
     }
 
     public async Task<Product?> GetProductByIdAsync(Guid id)
