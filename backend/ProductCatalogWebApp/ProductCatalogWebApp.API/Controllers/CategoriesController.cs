@@ -22,12 +22,12 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllCategories()
+    public async Task<IActionResult> GetAllCategories([FromQuery] int? page, [FromQuery] int? pageSize)
     {
-        var categories = await _categoryService.GetAllCategoriesAsync();
-        var categoriesResponse = _mapper.Map<IEnumerable<CategoryResponse>>(categories);
+        var categories = await _categoryService.GetAllCategoriesAsync(page, pageSize);
+        var categoriesResponse = _mapper.Map<IEnumerable<CategoryResponse>>(categories.categories);
         
-        return Ok(categoriesResponse);
+        return Ok(new { categoriesResponse, categories.totalPages });
     }
 
     [HttpGet("{id:guid}")]

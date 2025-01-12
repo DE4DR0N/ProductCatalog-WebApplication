@@ -13,9 +13,9 @@ public class CategoryService : ICategoryService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
+    public async Task<(IEnumerable<Category> categories, int totalPages)> GetAllCategoriesAsync(int? page, int? pageSize)
     {
-        var categories = await _unitOfWork.Categories.GetAllCategoriesAsync();
+        var categories = await _unitOfWork.Categories.GetAllCategoriesAsync(page, pageSize);
         return categories;
     }
 

@@ -1,19 +1,27 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProductCatalogWebApp.Domain.Abstractions;
 using ProductCatalogWebApp.Domain.Entities;
+using static ProductCatalogWebApp.Persistence.Extensions.CategoryExtensions;
 
 namespace ProductCatalogWebApp.Persistence.Repositories;
 
 public class CategoriesRepository(CatalogDbContext catalogDbContext) : ICategoriesRepository
 {
-    public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
+    public async Task<(IEnumerable<Category> categories, int totalPages)> GetAllCategoriesAsync(int? pageNumber, int? pageSize)
     {
+        var size = pageSize ?? 20;
+        var totalCategories = await catalogDbContext.Categories
+            .AsNoTracking()
+            .CountAsync();
+        var totalPages = (int)Math.Ceiling(totalCategories / (double)size);
+        
         var categories = await catalogDbContext.Categories
             .Include(c => c.Products)
             .AsNoTracking()
+            .Paginate(pageNumber, pageSize)
             .ToListAsync();
         
-        return categories;
+        return (categories, totalPages);
     }
 
     public async Task<Category?> GetCategoryByIdAsync(Guid id)
