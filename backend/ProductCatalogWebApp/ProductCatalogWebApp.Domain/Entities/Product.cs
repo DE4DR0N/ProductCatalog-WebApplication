@@ -7,7 +7,7 @@ public class Product
     public decimal Price { get; init; }
     public string? Description { get; init; }
     public string? NoteGeneral { get; init; }
-    public string? NoteSpecial { get; init; }
+    public string? NoteSpecial { get; set; }
     public Guid CategoryId { get; init; }
     
     public virtual required Category Category { get; init; }

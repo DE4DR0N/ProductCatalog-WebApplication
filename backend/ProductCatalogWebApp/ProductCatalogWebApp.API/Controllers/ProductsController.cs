@@ -62,6 +62,7 @@ public class ProductsController : ControllerBase
     public async Task<IActionResult> AddProduct([FromBody] ProductRequest productRequest)
     {
         var product = _mapper.Map<Product>(productRequest);
+        if (User.IsInRole("User")) product.NoteSpecial = null;
         await _productService.CreateProductAsync(product);
         
         return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
@@ -71,6 +72,7 @@ public class ProductsController : ControllerBase
     public async Task<IActionResult> UpdateProduct([FromRoute] Guid id, [FromBody] ProductRequest productRequest)
     {
         var product = _mapper.Map<Product>(productRequest);
+        if (User.IsInRole("User")) product.NoteSpecial = null;
         await _productService.UpdateProductAsync(id, product);
         
         return Ok();
