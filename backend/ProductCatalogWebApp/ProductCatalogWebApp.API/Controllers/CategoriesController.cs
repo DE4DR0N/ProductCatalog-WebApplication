@@ -39,7 +39,7 @@ public class CategoriesController : ControllerBase
         return Ok(categoryResponse);
     }
 
-    [Authorize(Roles = "AdvancedUser")]
+    [Authorize(Roles = "AdvancedUser, Admin")]
     [HttpPost]
     public async Task<IActionResult> AddCategory([FromBody] CategoryRequest categoryRequest)
     {
@@ -49,7 +49,7 @@ public class CategoriesController : ControllerBase
         return CreatedAtAction(nameof(GetCategoryById), new { id = category.Id }, category);
     }
 
-    [Authorize(Roles = "AdvancedUser")]
+    [Authorize(Roles = "AdvancedUser, Admin")]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateCategory([FromRoute] Guid id, [FromBody] CategoryRequest categoryRequest)
     {
@@ -59,7 +59,7 @@ public class CategoriesController : ControllerBase
         return Ok();
     }
     
-    [Authorize(Roles = "AdvancedUser")]
+    [Authorize(Roles = "AdvancedUser, Admin")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteCategory([FromRoute] Guid id)
     {

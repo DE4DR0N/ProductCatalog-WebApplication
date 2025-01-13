@@ -78,7 +78,7 @@ public class ProductsController : ControllerBase
         return Ok();
     }
 
-    [Authorize(Roles = "AdvancedUser")]
+    [Authorize(Roles = "AdvancedUser, Admin")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteProduct([FromRoute] Guid id)
     {
