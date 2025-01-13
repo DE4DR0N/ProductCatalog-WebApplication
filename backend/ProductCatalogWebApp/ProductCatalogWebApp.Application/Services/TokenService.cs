@@ -15,7 +15,7 @@ public class TokenService
         _configuration = configuration;
     }
 
-    public string GenerateToken(string username, string role)
+    public string GenerateToken(string username, string role, bool isBlocked)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
@@ -24,7 +24,8 @@ public class TokenService
         var claims = new[]
         {
             new Claim(ClaimTypes.Name, username),
-            new Claim(ClaimTypes.Role, role)
+            new Claim(ClaimTypes.Role, role),
+            new Claim("isBlocked", isBlocked.ToString())
         };
 
         var token = new JwtSecurityToken(

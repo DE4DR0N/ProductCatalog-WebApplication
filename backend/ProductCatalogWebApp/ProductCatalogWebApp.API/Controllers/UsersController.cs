@@ -70,7 +70,7 @@ public class UsersController : ControllerBase
     }
     
     [Authorize(Roles = "Admin")]
-    [HttpPost("{id:guid}/block")]
+    [HttpPut("{id:guid}/block")]
     public async Task<IActionResult> BlockUser([FromRoute] Guid id, [FromBody] bool isBlocked)
     {
         await _userService.BlockUserAsync(id, isBlocked);

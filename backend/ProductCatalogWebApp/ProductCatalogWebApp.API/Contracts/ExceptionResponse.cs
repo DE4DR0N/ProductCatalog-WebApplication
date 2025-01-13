@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace RepositoryBNTU.API.DTOs
+namespace ProductCatalogWebApp.API.Contracts
 {
     public record ExceptionResponse(HttpStatusCode StatusCode, string Description);
 }

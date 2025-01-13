@@ -26,7 +26,7 @@ public class AuthService : IAuthService
             throw new UnauthorizedAccessException("Invalid email or password");
         }
 
-        var token = _tokenService.GenerateToken(user.Email, user.Role);
+        var token = _tokenService.GenerateToken(user.Email, user.Role, user.IsBlocked);
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,

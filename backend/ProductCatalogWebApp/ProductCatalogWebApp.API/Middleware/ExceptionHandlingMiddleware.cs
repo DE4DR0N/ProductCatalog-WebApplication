@@ -1,5 +1,5 @@
 ﻿using System.Net;
-using RepositoryBNTU.API.DTOs;
+using ProductCatalogWebApp.API.Contracts;
 
 namespace ProductCatalogWebApp.API.Middleware;
 
