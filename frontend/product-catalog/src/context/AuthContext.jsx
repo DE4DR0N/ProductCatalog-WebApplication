@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import Cookies from 'js-cookie';
 import {jwtDecode} from "jwt-decode";
+import {logout as logoutApi} from "../api.js";
 
 const AuthContext = createContext();
 
@@ -28,6 +29,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
+        logoutApi();
         Cookies.remove('accessToken');
         setIsAuthenticated(false);
         setUser(null);

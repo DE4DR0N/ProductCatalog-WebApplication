@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { fetchCategories } from '../api';
+import { useAuth } from '../context/AuthContext';
 
 const ProductForm = ({ onSubmit }) => {
+    const { user } = useAuth();
     const [name, setName] = useState('');
     const [price, setPrice] = useState('');
     const [description, setDescription] = useState('');
     const [noteGeneral, setNoteGeneral] = useState('');
     const [noteSpecial, setNoteSpecial] = useState('');
-    const [category, setCategory] = useState('');
+    const [categoryId, setCategory] = useState('');
     const [categories, setCategories] = useState([]);
 
     useEffect(() => {
@@ -27,13 +29,13 @@ const ProductForm = ({ onSubmit }) => {
             description,
             noteGeneral,
             noteSpecial,
-            category,
+            categoryId,
         });
     };
 
     return (
-        <form onSubmit={handleSubmit} className="max-w-md mx-auto p-4 border rounded-lg">
-            <h2 className="text-xl font-bold mb-4">Create Product</h2>
+        <form onSubmit={handleSubmit} className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold mb-6 text-indigo-600">Create Product</h2>
             <div className="mb-4">
                 <label className="block mb-2">Name</label>
                 <input
@@ -60,7 +62,6 @@ const ProductForm = ({ onSubmit }) => {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     className="w-full p-2 border rounded"
-                    required
                 ></textarea>
             </div>
             <div className="mb-4">
@@ -71,18 +72,20 @@ const ProductForm = ({ onSubmit }) => {
                     className="w-full p-2 border rounded"
                 ></textarea>
             </div>
-            <div className="mb-4">
-                <label className="block mb-2">Note special</label>
-                <textarea
-                    value={noteSpecial}
-                    onChange={(e) => setNoteSpecial(e.target.value)}
-                    className="w-full p-2 border rounded"
-                ></textarea>
-            </div>
+            {user && (user.role === 'Admin' || user.role === 'AdvancedUser') && (
+                <div className="mb-4">
+                    <label className="block mb-2">Note special</label>
+                    <textarea
+                        value={noteSpecial}
+                        onChange={(e) => setNoteSpecial(e.target.value)}
+                        className="w-full p-2 border rounded"
+                    ></textarea>
+                </div>
+            )}
             <div className="mb-4">
                 <label className="block mb-2">Category</label>
                 <select
-                    value={category}
+                    value={categoryId}
                     onChange={(e) => setCategory(e.target.value)}
                     className="w-full p-2 border rounded"
                     required
@@ -93,7 +96,9 @@ const ProductForm = ({ onSubmit }) => {
                     ))}
                 </select>
             </div>
-            <button type="submit" className="w-full p-2 bg-green-500 text-white rounded">Create</button>
+            <button type="submit" className="w-full p-2 bg-green-500 text-white rounded hover:bg-green-600 transition duration-200">
+                Create
+            </button>
         </form>
     );
 };

@@ -53,8 +53,8 @@ const ManageCategoriesPage = () => {
     };
 
     return (
-        <div className="container mx-auto p-4">
-            <h2 className="text-3xl font-bold mb-8">Manage Categories</h2>
+        <div className="container mx-auto p-6 bg-white rounded-lg shadow-lg">
+            <h2 className="text-4xl font-bold mb-8">Manage Categories</h2>
             {user && (user.role === 'AdvancedUser' || user.role === 'Admin') ? (
                 <>
                     <form onSubmit={handleCreateCategory} className="mb-8">
@@ -63,21 +63,23 @@ const ManageCategoriesPage = () => {
                             value={newCategory}
                             onChange={(e) => setNewCategory(e.target.value)}
                             placeholder="New Category Name"
-                            className="w-full p-2 border rounded mb-4"
+                            className="w-full p-2 border rounded mb-4 shadow-sm"
                             required
                         />
-                        <button type="submit" className="w-full p-2 bg-green-500 text-white rounded">Add Category</button>
+                        <button type="submit" className="w-full p-2 bg-green-500 text-white rounded hover:bg-green-600 transition duration-200">Add Category</button>
                     </form>
-                    <ul>
+                    <ul className="space-y-4">
                         {categories.map(category => (
-                            <li key={category.id} className="mb-4 p-4 border rounded">
+                            <li key={category.id} className="p-4 border rounded shadow-sm hover:shadow-lg">
                                 {editingCategory && editingCategory.id === category.id ? (
                                     <EditCategoryForm category={category} onSave={handleSaveCategory} />
                                 ) : (
                                     <>
-                                        <p>{category.name}</p>
-                                        <button onClick={() => handleEditCategory(category)} className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 mr-2">Edit</button>
-                                        <button onClick={() => handleDeleteCategory(category.id)} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Delete</button>
+                                        <p className="text-lg font-semibold text-gray-700">{category.name}</p>
+                                        <div className="flex space-x-4 mt-4">
+                                            <button onClick={() => handleEditCategory(category)} className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition duration-200">Edit</button>
+                                            <button onClick={() => handleDeleteCategory(category.id)} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition duration-200">Delete</button>
+                                        </div>
                                     </>
                                 )}
                             </li>
@@ -85,7 +87,7 @@ const ManageCategoriesPage = () => {
                     </ul>
                 </>
             ) : (
-                <p>You do not have permission to manage categories.</p>
+                <p className="text-lg text-center text-red-500">You do not have permission to manage categories.</p>
             )}
         </div>
     );

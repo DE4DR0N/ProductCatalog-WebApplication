@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import LoginForm from '../components/LoginForm';
 import { login as loginApi } from '../api';
 import { useAuth } from '../context/AuthContext';
-import Cookies from 'js-cookie';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -11,11 +10,11 @@ const LoginPage = () => {
     const handleLoginSubmit = async (data) => {
         try {
             const response = await loginApi(data.email, data.password);
-            Cookies.set('accessToken', response);
             login(response);
             navigate('/');
         } catch (error) {
             console.error('Ошибка логинации:', error);
+            throw new Error('Неверный логин или пароль');
         }
     };
 
