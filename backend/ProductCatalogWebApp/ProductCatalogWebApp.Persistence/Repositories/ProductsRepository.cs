@@ -26,6 +26,7 @@ public class ProductsRepository(CatalogDbContext catalogDbContext) : IProductsRe
             .AsNoTracking()
             .Filter(filter)
             .Search(search)
+            .OrderBy(p => p.Name)
             .Paginate(pageNumber, pageSize)
             .ToListAsync();
         

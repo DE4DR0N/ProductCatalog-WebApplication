@@ -10,6 +10,7 @@ public class UsersRepository(CatalogDbContext catalogDbContext) : IUsersReposito
     {
         var users = await catalogDbContext.Users
             .AsNoTracking()
+            .OrderBy(u => u.Role)
             .ToListAsync();
         
         return users;

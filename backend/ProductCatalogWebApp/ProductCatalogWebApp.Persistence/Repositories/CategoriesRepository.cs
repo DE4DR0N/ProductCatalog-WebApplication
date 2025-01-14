@@ -18,6 +18,7 @@ public class CategoriesRepository(CatalogDbContext catalogDbContext) : ICategori
         var categories = await catalogDbContext.Categories
             .Include(c => c.Products)
             .AsNoTracking()
+            .OrderBy(c => c.Name)
             .Paginate(pageNumber, pageSize)
             .ToListAsync();
         
