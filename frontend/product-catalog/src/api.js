@@ -1,16 +1,18 @@
 import axios from 'axios';
 
-const BASE_URL = "http://localhost:5041"; // Замените на ваш базовый URL API
+const BASE_URL = "http://localhost:5041";
 
-axios.defaults.withCredentials = true; // Включаем отправку Cookie с каждым запросом
+axios.defaults.withCredentials = true;
 
 export const fetchCategories = async () => {
     const response = await axios.get(`${BASE_URL}/categories`);
     return response.data;
 };
 
-export const fetchProducts = async () => {
-    const response = await axios.get(`${BASE_URL}/products`);
+export const fetchFilteredProducts = async (filters) => {
+    const response = await axios.get(`${BASE_URL}/products`, {
+        params: filters,
+    });
     return response.data;
 };
 
