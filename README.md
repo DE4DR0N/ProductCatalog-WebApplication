@@ -9,11 +9,16 @@ Product Catalog - это веб-приложение для управления
 - **Database**: PostgreSQL
 - **Аутентификация**: JWT токены
 
-## Установка и запуск
+## Запуск
 
 ### Backend
 
-1. Настройте базу данных в `appsettings.json`:
+1. Перейдите в директорию ProductCatalogWebApp.API:
+    ```bash
+    cd \ProductCatalog-WebApplication\backend\ProductCatalogWebApp\ProductCatalogWebApp.API
+    ```
+
+2. Настройте базу данных в `appsettings.json`:
 
     ```json
     {
@@ -28,21 +33,26 @@ Product Catalog - это веб-приложение для управления
     }
     ```
 
-2. Запустите приложение:
+3. Запустите приложение:
     ```bash
     dotnet run
     ```
 
 ### Frontend
 
-1. Установите зависимости:
+1. Перейдите в директорию product-catalog:
+    ```bash
+    cd \ProductCatalog-WebApplication\frontend\product-catalog
+    ```
+
+2. Установите зависимости:
     ```bash
     npm install
     ```
 
-2. Запустите приложение:
+3. Запустите приложение:
     ```bash
-    npm run
+    npm run dev
     ```
 
 ## Структура проекта
