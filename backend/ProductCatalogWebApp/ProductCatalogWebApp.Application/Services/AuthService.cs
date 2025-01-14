@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using ProductCatalogWebApp.Application.Abstractions;
 using ProductCatalogWebApp.Domain.Entities;
 
@@ -9,20 +10,24 @@ public class AuthService : IAuthService
     private readonly IUserService _userService;
     private readonly TokenService _tokenService;
     private readonly IHttpContextAccessor _httpContext;
+    private readonly ILogger<AuthService> _logger;
 
-    public AuthService(IUserService userService, TokenService tokenService, IHttpContextAccessor httpContext)
+    public AuthService(IUserService userService, TokenService tokenService, IHttpContextAccessor httpContext, ILogger<AuthService> logger)
     {
         _userService = userService;
         _tokenService = tokenService;
         _httpContext = httpContext;
+        _logger = logger;
     }
 
     public async Task<string> Login(string email, string password)
     {
+        _logger.LogInformation("Attempting to log in user with email {Email}", email);
         var user = await _userService.GetUserByEmailAsync(email);
 
         if (user == null || !BCrypt.Net.BCrypt.EnhancedVerify(password, user.Password))
         {
+            _logger.LogWarning("Invalid login attempt for email {Email}", email);
             throw new UnauthorizedAccessException("Invalid email or password");
         }
 
@@ -36,14 +41,20 @@ public class AuthService : IAuthService
         };
         
         _httpContext.HttpContext?.Response.Cookies.Append("accessToken", token, cookieOptions);
+        _logger.LogInformation("User {Email} logged in successfully", email);
         return token;
     }
 
     public async Task<string> Register(string email, string password)
     {
+        _logger.LogInformation("Attempting to register user with email {Email}", email);
         var existingUser = await _userService.GetUserByEmailAsync(email);
         
-        if (existingUser != null) throw new InvalidOperationException("User already exists");
+        if (existingUser != null)
+        {
+            _logger.LogWarning("User registration failed. User with email {Email} already exists", email);
+            throw new InvalidOperationException("User already exists");
+        }
 
         var user = new User
         {
@@ -55,11 +66,13 @@ public class AuthService : IAuthService
         };
         
         await _userService.CreateUserAsync(user);
+        _logger.LogInformation("User {Email} registered successfully", email);
         return "User registration successful";
     }
     
     public async Task Logout()
     {
+        _logger.LogInformation("User logging out");
         _httpContext.HttpContext?.Response.Cookies.Delete("accessToken");
         await Task.CompletedTask;
     }
