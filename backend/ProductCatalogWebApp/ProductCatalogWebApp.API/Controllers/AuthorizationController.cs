@@ -20,6 +20,15 @@ public class AuthorizationController : ControllerBase
     public async Task<IActionResult> Login([FromBody] AuthRequest request)
     {
         var token = await _authService.Login(request.Email, request.Password);
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddMinutes(60)
+        };
+        
+        HttpContext.Response.Cookies.Append("accessToken", token, cookieOptions);
         return Ok(token);
     }
 
@@ -34,6 +43,7 @@ public class AuthorizationController : ControllerBase
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
+        HttpContext.Response.Cookies.Delete("accessToken");
         await _authService.Logout();
         return NoContent();
     }

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using ProductCatalogWebApp.Application.Abstractions;
 using ProductCatalogWebApp.Domain.Entities;
 
@@ -9,14 +8,12 @@ public class AuthService : IAuthService
 {
     private readonly IUserService _userService;
     private readonly TokenService _tokenService;
-    private readonly IHttpContextAccessor _httpContext;
     private readonly ILogger<AuthService> _logger;
 
-    public AuthService(IUserService userService, TokenService tokenService, IHttpContextAccessor httpContext, ILogger<AuthService> logger)
+    public AuthService(IUserService userService, TokenService tokenService, ILogger<AuthService> logger)
     {
         _userService = userService;
         _tokenService = tokenService;
-        _httpContext = httpContext;
         _logger = logger;
     }
 
@@ -32,15 +29,6 @@ public class AuthService : IAuthService
         }
 
         var token = _tokenService.GenerateToken(user.Email, user.Role, user.IsBlocked);
-        var cookieOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTime.UtcNow.AddMinutes(60)
-        };
-        
-        _httpContext.HttpContext?.Response.Cookies.Append("accessToken", token, cookieOptions);
         _logger.LogInformation("User {Email} logged in successfully", email);
         return token;
     }
@@ -73,7 +61,6 @@ public class AuthService : IAuthService
     public async Task Logout()
     {
         _logger.LogInformation("User logging out");
-        _httpContext.HttpContext?.Response.Cookies.Delete("accessToken");
         await Task.CompletedTask;
     }
 }
