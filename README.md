@@ -15,7 +15,7 @@ Product Catalog - это веб-приложение для управления
 
 1. Перейдите в директорию ProductCatalogWebApp.API:
     ```bash
-    cd \ProductCatalog-WebApplication\backend\ProductCatalogWebApp\ProductCatalogWebApp.API
+    cd .\ProductCatalog-WebApplication\backend\ProductCatalogWebApp\ProductCatalogWebApp.API
     ```
 
 2. Настройте базу данных в `appsettings.json`:
@@ -42,7 +42,7 @@ Product Catalog - это веб-приложение для управления
 
 1. Перейдите в директорию product-catalog:
     ```bash
-    cd \ProductCatalog-WebApplication\frontend\product-catalog
+    cd .\ProductCatalog-WebApplication\frontend\product-catalog
     ```
 
 2. Установите зависимости:
