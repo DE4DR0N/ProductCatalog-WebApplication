@@ -11,6 +11,10 @@ public static class ServiceCollectionExtensions
 {
     public static void AddApplicationServices(this IServiceCollection services)
     {
+        services.AddMemoryCache();
+
+        services.AddSingleton<ICacheService, CacheService>();
+        
         services.AddScoped<IProductsRepository, ProductsRepository>();
         services.AddScoped<ICategoriesRepository, CategoriesRepository>();
         services.AddScoped<IUsersRepository, UsersRepository>();
