@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using ProductCatalogWebApp.Application.Abstractions;
 using ProductCatalogWebApp.Domain.Abstractions;
 using ProductCatalogWebApp.Domain.Entities;
@@ -9,24 +10,53 @@ public class CategoryService : ICategoryService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CategoryService> _logger;
+    private readonly IMemoryCache _cache;
 
-    public CategoryService(IUnitOfWork unitOfWork, ILogger<CategoryService> logger)
+    public CategoryService(IUnitOfWork unitOfWork, ILogger<CategoryService> logger, IMemoryCache cache)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _cache = cache;
     }
 
     public async Task<(IEnumerable<Category> categories, int totalPages)> GetAllCategoriesAsync(int? page, int? pageSize)
     {
         _logger.LogInformation("Getting categories for page {Page} with page size {PageSize}", page, pageSize);
-        var categories = await _unitOfWork.Categories.GetAllCategoriesAsync(page, pageSize);
+        var cacheKey = $"Categories_{page}_{pageSize}";
+
+        if (!_cache.TryGetValue(cacheKey, out (IEnumerable<Category>, int) categories))
+        {
+            _logger.LogInformation("Cache miss for key: {CacheKey}", cacheKey);
+            categories = await _unitOfWork.Categories.GetAllCategoriesAsync(page, pageSize);
+
+            _cache.Set(cacheKey, categories, TimeSpan.FromMinutes(5));
+        }
+        else
+        {
+            _logger.LogInformation("Cache hit for key: {CacheKey}", cacheKey);
+        }
+        
         return categories;
     }
 
     public async Task<Category?> GetCategoryByIdAsync(Guid id)
     {
         _logger.LogInformation("Getting category with ID {CategoryId}", id);
-        var category = await _unitOfWork.Categories.GetCategoryByIdAsync(id);
+        
+        var cacheKey = $"Category_{id}";
+
+        if (!_cache.TryGetValue(cacheKey, out Category? category))
+        {
+            _logger.LogInformation("Cache miss for key: {CacheKey}", cacheKey);
+            category = await _unitOfWork.Categories.GetCategoryByIdAsync(id);
+
+            if (category != null) _cache.Set(cacheKey, category, TimeSpan.FromMinutes(10));
+        }
+        else
+        {
+            _logger.LogInformation("Cache hit for key: {CacheKey}", cacheKey);
+        }
+        
         return category;
     }
 
@@ -43,6 +73,8 @@ public class CategoryService : ICategoryService
         await _unitOfWork.Categories.CreateCategoryAsync(category);
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("Category {CategoryName} created successfully", category.Name);
+        
+        _cache.Remove("Categories");
     }
 
     public async Task UpdateCategoryAsync(Guid id, Category category)
@@ -60,6 +92,9 @@ public class CategoryService : ICategoryService
         category.Id = id;
         await _unitOfWork.Categories.UpdateCategoryAsync(category);
         _logger.LogInformation("Category {CategoryName} updated successfully", category.Name);
+        
+        _cache.Remove($"Category_{id}");
+        _cache.Remove("Categories");
     }
 
     public async Task DeleteCategoryAsync(Guid id)
@@ -69,5 +104,8 @@ public class CategoryService : ICategoryService
         if (categoryToDelete == null) throw new KeyNotFoundException("Category not found");
         await _unitOfWork.Categories.DeleteCategoryAsync(id);
         _logger.LogInformation("Category with ID {CategoryId} deleted successfully", id);
+        
+        _cache.Remove($"Category_{id}");
+        _cache.Remove("Categories");
     }
 }
