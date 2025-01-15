@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using ProductCatalogWebApp.Application.Abstractions;
+﻿using ProductCatalogWebApp.Application.Abstractions;
 using ProductCatalogWebApp.Domain.Abstractions;
 using ProductCatalogWebApp.Domain.Entities;
 using Microsoft.Extensions.Logging;
@@ -10,13 +9,13 @@ public class UserService : IUserService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UserService> _logger;
-    private readonly IMemoryCache _cache;
+    private readonly ICacheService _cacheService;
 
-    public UserService(IUnitOfWork unitOfWork, ILogger<UserService> logger, IMemoryCache cache)
+    public UserService(IUnitOfWork unitOfWork, ILogger<UserService> logger, ICacheService cacheService)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
-        _cache = cache;
+        _cacheService = cacheService;
     }
 
     public async Task<IEnumerable<User>> GetAllUsersAsync()
@@ -24,12 +23,12 @@ public class UserService : IUserService
         _logger.LogInformation("Getting all users.");
         var cacheKey = "Users";
         
-        if (!_cache.TryGetValue(cacheKey, out IEnumerable<User>? users))
+        if (!_cacheService.TryGetValue(cacheKey, out IEnumerable<User>? users))
         {
             _logger.LogInformation("Cache miss for all users.");
             users = await _unitOfWork.Users.GetAllUsersAsync();
 
-            _cache.Set(cacheKey, users, TimeSpan.FromMinutes(10));
+            _cacheService.Set(cacheKey, users, TimeSpan.FromMinutes(10));
         }
         else
         {
@@ -42,14 +41,14 @@ public class UserService : IUserService
     public async Task<User?> GetUserByIdAsync(Guid userId)
     {
         _logger.LogInformation("Getting user by ID: {userId}", userId);
-        var cacheKey = $"User_{userId}";
+        var cacheKey = $"Users_{userId}";
         
-        if (!_cache.TryGetValue(cacheKey, out User? user))
+        if (!_cacheService.TryGetValue(cacheKey, out User? user))
         {
             _logger.LogInformation("Cache miss for user ID: {UserId}", userId);
             user = await _unitOfWork.Users.GetUserByIdAsync(userId);
 
-            if (user != null) _cache.Set(cacheKey, user, TimeSpan.FromMinutes(5));
+            if (user != null) _cacheService.Set(cacheKey, user, TimeSpan.FromMinutes(5));
         }
         else
         {
@@ -61,14 +60,14 @@ public class UserService : IUserService
     public async Task<User?> GetUserByEmailAsync(string email)
     {
         _logger.LogInformation("Getting user by email: {email}", email);
-        var cacheKey = $"User_Email_{email}";
+        var cacheKey = $"Users_Email_{email}";
 
-        if (!_cache.TryGetValue(cacheKey, out User? user))
+        if (!_cacheService.TryGetValue(cacheKey, out User? user))
         {
             _logger.LogInformation("Cache miss for user email: {Email}", email);
             user = await _unitOfWork.Users.GetUserByEmailAsync(email);
 
-            if (user != null) _cache.Set(cacheKey, user, TimeSpan.FromMinutes(5));
+            if (user != null) _cacheService.Set(cacheKey, user, TimeSpan.FromMinutes(5));
         }
         else
         {
@@ -84,7 +83,7 @@ public class UserService : IUserService
         await _unitOfWork.Users.AddUserAsync(user);
         await _unitOfWork.SaveChangesAsync();
         
-        _cache.Remove("Users");
+        _cacheService.Remove("Users");
     }
 
     public async Task UpdateUserAsync(Guid id, User user)
@@ -100,9 +99,7 @@ public class UserService : IUserService
         user.Password = BCrypt.Net.BCrypt.EnhancedHashPassword(user.Password);
         await _unitOfWork.Users.UpdateUserAsync(user);
         
-        _cache.Remove($"User_{id}");
-        _cache.Remove($"User_Email_{userToUpdate.Email}");
-        _cache.Remove("Users");
+        _cacheService.RemoveByPrefix("Users");
     }
 
     public async Task DeleteUserAsync(Guid id)
@@ -116,9 +113,7 @@ public class UserService : IUserService
         }
         await _unitOfWork.Users.DeleteUserAsync(id);
         
-        _cache.Remove($"User_{id}");
-        _cache.Remove($"User_Email_{userToDelete.Email}");
-        _cache.Remove("Users");
+        _cacheService.RemoveByPrefix("Users");
     }
 
     public async Task BlockUserAsync(Guid id, bool isBlocked)
@@ -133,8 +128,6 @@ public class UserService : IUserService
         user.IsBlocked = isBlocked;
         await _unitOfWork.Users.UpdateUserAsync(user);
         
-        _cache.Remove($"User_{id}");
-        _cache.Remove($"User_Email_{user.Email}");
-        _cache.Remove("Users");
+        _cacheService.RemoveByPrefix("Users");
     }
 }

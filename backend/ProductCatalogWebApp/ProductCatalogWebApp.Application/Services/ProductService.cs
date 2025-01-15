@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Caching.Memory;
 using ProductCatalogWebApp.Application.Abstractions;
 using ProductCatalogWebApp.Domain.Abstractions;
 using ProductCatalogWebApp.Domain.Entities;
@@ -11,13 +10,13 @@ public class ProductService : IProductService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ProductService> _logger;
-    private readonly IMemoryCache _cache; 
+    private readonly ICacheService _cacheService;
 
-    public ProductService(IUnitOfWork unitOfWork, ILogger<ProductService> logger, IMemoryCache cache)
+    public ProductService(IUnitOfWork unitOfWork, ILogger<ProductService> logger, ICacheService cacheService)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
-        _cache = cache;
+        _cacheService = cacheService;
     }
 
     public async Task<(IEnumerable<Product> products, int totalPages)> GetAllProductsAsync(string? search,
@@ -28,13 +27,13 @@ public class ProductService : IProductService
         _logger.LogInformation("Getting all products with search: {Search} and filter: {Filter}", search, filter);
         var cacheKey = $"Products_{search}_{filter}_{pageNumber}_{pageSize}";
 
-        if (!_cache.TryGetValue(cacheKey, out (IEnumerable<Product>, int) products))
+        if (!_cacheService.TryGetValue(cacheKey, out (IEnumerable<Product>, int) products))
         {
             {
                 _logger.LogInformation("Cache miss for key: {CacheKey}", cacheKey);
                 products = await _unitOfWork.Products.GetAllProductsAsync(search, filter, pageNumber, pageSize);
 
-                _cache.Set(cacheKey, products, TimeSpan.FromMinutes(5));
+                _cacheService.Set(cacheKey, products, TimeSpan.FromMinutes(5));
             }
         }
         else
@@ -48,13 +47,13 @@ public class ProductService : IProductService
     public async Task<Product?> GetProductByIdAsync(Guid id)
     {
         _logger.LogInformation("Getting product by ID: {Id}", id);
-        var cacheKey = $"Product_{id}";
-        if (!_cache.TryGetValue(cacheKey, out Product? product))
+        var cacheKey = $"Products_{id}";
+        if (!_cacheService.TryGetValue(cacheKey, out Product? product))
         {
             _logger.LogInformation("Cache miss for key: {CacheKey}", cacheKey);
             product = await _unitOfWork.Products.GetProductByIdAsync(id);
             
-            if (product != null) _cache.Set(cacheKey, product, TimeSpan.FromMinutes(10));
+            if (product != null) _cacheService.Set(cacheKey, product, TimeSpan.FromMinutes(10));
         }
         else
         {
@@ -77,7 +76,7 @@ public class ProductService : IProductService
         await _unitOfWork.Products.CreateProductAsync(product);
         await _unitOfWork.SaveChangesAsync();
         
-        _cache.Remove("Products");
+        _cacheService.RemoveByPrefix("Products");
     }
 
     public async Task UpdateProductAsync(Guid id, Product product)
@@ -100,8 +99,7 @@ public class ProductService : IProductService
         product.Id = id;
         await _unitOfWork.Products.UpdateProductAsync(product);
         
-        _cache.Remove($"Product_{id}");
-        _cache.Remove("Products");
+        _cacheService.RemoveByPrefix("Products");
     }
 
     public async Task DeleteProductAsync(Guid id)
@@ -116,7 +114,6 @@ public class ProductService : IProductService
 
         await _unitOfWork.Products.DeleteProductAsync(id);
         
-        _cache.Remove($"Product_{id}");
-        _cache.Remove("Products");
+        _cacheService.RemoveByPrefix("Products");
     }
 }
