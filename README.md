@@ -8,8 +8,22 @@ Product Catalog - это веб-приложение для управления
 - **Backend**: ASP.NET Core Web API
 - **Database**: PostgreSQL
 - **Аутентификация**: JWT токены
+- **Контейнеризация**: Docker
 
 ## Запуск
+
+### С использованием Docker
+
+1. Перейдите в корневую директорию проекта:
+    ```bash
+    cd ./ProductCatalog-WebApplication
+    ```
+2. Постройте и запустите контейнеры:
+    ```bash
+    docker-compose up --build
+    ```
+3. Фронтенд будет доступен по адресу: `http://localhost:5173`
+4. Бэкенд будет доступен по адресу: `http://localhost:5041`
 
 ### Backend
 
