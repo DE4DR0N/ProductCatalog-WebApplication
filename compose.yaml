@@ -1,0 +1,33 @@
+﻿services:
+  productcatalogwebapp.api:
+    image: productcatalogwebapp.api
+    build:
+      context: ./backend/ProductCatalogWebApp
+      dockerfile: ProductCatalogWebApp.API/Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "5041:8080"
+
+  productcatalogwebapp.frontend:
+    image: productcatalogwebapp.frontend
+    build:
+      context: ./frontend/product-catalog
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+
+  db:
+    container_name: postgres
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ProductCatalogDB
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:
