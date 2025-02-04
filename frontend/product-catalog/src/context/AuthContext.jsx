@@ -1,31 +1,53 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import Cookies from 'js-cookie';
-import {jwtDecode} from "jwt-decode";
-import {logout as logoutApi} from "../api.js";
+import { jwtDecode } from "jwt-decode";
+import { logout as logoutApi } from "../api.js";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [user, setUser] = useState(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(() => {
+        return localStorage.getItem('isAuthenticated') === 'true';
+    });
+    const [user, setUser] = useState(() => {
+        const storedUser = localStorage.getItem('user');
+        return storedUser ? JSON.parse(storedUser) : null;
+    });
 
     useEffect(() => {
         const token = Cookies.get('accessToken');
         if (token) {
-            const decodedToken = jwtDecode(token);
-            const userRole = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-            const isBlocked = decodedToken['isBlocked'] === 'True';
-            setIsAuthenticated(true);
-            setUser({ role: userRole, isBlocked });
+            try {
+                const decodedToken = jwtDecode(token);
+                const userRole = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+                const isBlocked = decodedToken['isBlocked'] === 'True';
+                const userData = { role: userRole, isBlocked };
+
+                setIsAuthenticated(true);
+                setUser(userData);
+                localStorage.setItem('isAuthenticated', 'true');
+                localStorage.setItem('user', JSON.stringify(userData));
+            } catch (error) {
+                console.error("Ошибка при декодировании токена:", error);
+                logout();
+            }
         }
     }, []);
 
     const login = (token) => {
-        const decodedToken = jwtDecode(token);
-        const userRole = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-        const isBlocked = decodedToken['isBlocked'] === 'True';
-        setIsAuthenticated(true);
-        setUser({ role: userRole, isBlocked });
+        try {
+            const decodedToken = jwtDecode(token);
+            const userRole = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+            const isBlocked = decodedToken['isBlocked'] === 'True';
+            const userData = { role: userRole, isBlocked };
+
+            setIsAuthenticated(true);
+            setUser(userData);
+            localStorage.setItem('isAuthenticated', 'true');
+            localStorage.setItem('user', JSON.stringify(userData));
+        } catch (error) {
+            console.error("Ошибка при декодировании токена:", error);
+        }
     };
 
     const logout = () => {
@@ -33,6 +55,8 @@ export const AuthProvider = ({ children }) => {
         Cookies.remove('accessToken');
         setIsAuthenticated(false);
         setUser(null);
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('user');
     };
 
     return (
